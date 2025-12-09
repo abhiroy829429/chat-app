@@ -55,7 +55,14 @@ export async function POST(request: Request) {
     // Fetch all FAQs from database
     const client = await clientPromise
     const db = client.db('diet_faq')
-    const faqs = await db.collection('faqs').find({}).toArray()
+   const rawFaqs = await db.collection('faqs').find({}).toArray()
+
+    const faqs: FAQDocument[] = rawFaqs.map((doc: any) => ({
+      questionNumber: doc.questionNumber,
+      question: doc.question,
+      answer: doc.answer,
+      _id: doc._id,
+    }))
 
     if (faqs.length === 0) {
       return NextResponse.json(
