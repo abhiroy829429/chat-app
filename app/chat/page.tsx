@@ -4,6 +4,8 @@ import { api } from '@/lib/api'
 import { signOut, useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 interface Message {
   id: string
@@ -19,16 +21,24 @@ export default function ChatPage() {
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/')
     }
-  }, [router])
+  }, [router, status])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto'
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`
+    }
+  }, [input])
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return
@@ -66,7 +76,7 @@ export default function ChatPage() {
     }
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handleSend()
@@ -123,7 +133,7 @@ export default function ChatPage() {
               <p className="text-xs text-slate-400 truncate">{session?.user?.email || 'user@example.com'}</p>
             </div>
             <button
-              onClick={() => signOut({ callbackUrl: '/' })}
+              onClick={() => signOut()}
               className="p-2 rounded-lg hover:bg-white/10 transition-all"
             >
               <svg className="w-5 h-5 text-slate-400 hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -146,18 +156,11 @@ export default function ChatPage() {
             </div>
             <span className="font-bold text-lg">DietAI</span>
           </div>
-          <button
-            onClick={() => signOut({ callbackUrl: '/' })}
-            className="p-2 rounded-lg hover:bg-white/10 transition-all"
-          >
-            <svg className="w-5 h-5 text-slate-400 hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-          </button>
         </header>
 
         {/* Chat Area */}
-        <div className="flex-1 overflow-y-auto p-6 md:p-10 space-y-8 scroll-smooth bg-gradient-to-b from-transparent to-slate-900/20">
+        <div className="flex-1 overflow-y-auto p-6 md:p-10 scroll-smooth bg-gradient-to-b from-transparent to-slate-900/20">
+          <div className="w-4/5 mx-auto px-16 flex flex-col space-y-8">
           {messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center space-y-8 opacity-0 animate-fadeIn" style={{ animationFillMode: 'forwards' }}>
               <div className="w-24 h-24 rounded-3xl bg-gradient-to-tr from-emerald-500 to-cyan-500 flex items-center justify-center shadow-2xl shadow-emerald-500/30 mb-6">
@@ -168,7 +171,7 @@ export default function ChatPage() {
               <div className="space-y-4 max-w-lg">
                 <h2 className="text-4xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">How can I help you?</h2>
                 <p className="text-slate-400 text-lg leading-relaxed">
-                  Ask me anything about diet, nutrition, or healthy living. I'm here to provide science-backed answers.
+                  Ask me anything about diet, nutrition, or healthy living. I am here to provide science-backed answers.
                 </p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-3xl mt-10">
@@ -185,86 +188,101 @@ export default function ChatPage() {
             </div>
           ) : (
             messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${message.isUser ? 'justify-end' : 'justify-start'} animate-slideIn`}
-              >
-                <div className={`flex gap-6 max-w-4xl ${message.isUser ? 'flex-row-reverse' : 'flex-row'}`}>
-                  {/* Avatar */}
-                  <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center shadow-lg ${message.isUser ? 'bg-gradient-to-r from-emerald-500 to-cyan-500' : 'bg-gradient-to-r from-slate-600 to-slate-700'
-                    }`}>
-                    {message.isUser ? (
-                      <span className="text-sm font-bold text-white">{session?.user?.name?.charAt(0).toUpperCase() || 'U'}</span>
-                    ) : (
-                      <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
-                    )}
-                  </div>
-
-                  {/* Message Bubble */}
-                  <div className={`group relative px-8 py-5 rounded-3xl shadow-xl ${message.isUser
-                      ? 'bg-gradient-to-r from-emerald-500 to-cyan-500 text-white rounded-tr-sm'
-                      : 'bg-gradient-to-r from-white/15 to-white/10 border border-white/20 text-slate-200 rounded-tl-sm'
-                    }`}>
-                    <p className="whitespace-pre-wrap leading-relaxed text-lg">{message.text}</p>
-                    <span className={`text-xs absolute bottom-3 ${message.isUser ? 'right-3 text-emerald-200' : 'left-3 text-slate-500'
-                      } opacity-0 group-hover:opacity-100 transition-opacity`}>
-                      {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </span>
+              <div key={message.id} className="w-full animate-slideIn mb-4">
+                <div className={`w-full flex ${message.isUser ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`${message.isUser ? 'w-[40%] text-right' : 'w-[80%] text-left'}`}>
+                    <div className={`${message.isUser ? 'inline-block p-4 bg-blue-600/85 text-white rounded-xl border border-white/10' : 'inline-block p-4 bg-slate-700/80 text-white rounded-xl border border-white/10'}`}>
+                      <div className={`${message.isUser ? 'prose-invert max-w-none break-words text-sm leading-relaxed' : 'prose-invert max-w-none break-words text-sm leading-relaxed'}`}>
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.text}</ReactMarkdown>
+                      </div>
+                      <div className={`text-[11px] mt-2 ${message.isUser ? 'text-emerald-200 text-right' : 'text-slate-400 text-left'}`}>
+                        {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             ))
           )}
 
-          {isLoading && (
-            <div className="flex justify-start animate-pulse">
-              <div className="flex gap-6 max-w-4xl">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-slate-600 to-slate-700 flex items-center justify-center shadow-lg">
-                  <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                </div>
-                <div className="bg-gradient-to-r from-white/10 to-white/5 border border-white/20 rounded-3xl rounded-tl-sm px-8 py-5 flex items-center gap-3 shadow-xl">
-                  <span className="w-3 h-3 bg-slate-400 rounded-full animate-bounce" />
-                  <span className="w-3 h-3 bg-slate-400 rounded-full animate-bounce delay-100" />
-                  <span className="w-3 h-3 bg-slate-400 rounded-full animate-bounce delay-200" />
+          {isLoading && messages.length > 0 && messages[messages.length - 1].isUser && (
+            <div className="w-full flex justify-start animate-pulse mb-4">
+              <div className="w-[80%]">
+                <div className="inline-block p-4 bg-gray-100 text-slate-900 rounded-xl border border-gray-200/40 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <span className="w-3 h-3 bg-slate-400 rounded-full animate-bounce" />
+                    <span className="w-3 h-3 bg-slate-400 rounded-full animate-bounce delay-100" />
+                    <span className="w-3 h-3 bg-slate-400 rounded-full animate-bounce delay-200" />
+                  </div>
                 </div>
               </div>
             </div>
           )}
           <div ref={messagesEndRef} />
+          </div>
         </div>
 
         {/* Input Area */}
-        <div className="p-4 md:p-6 bg-gradient-to-t from-[#0f172a] via-[#0f172a] to-transparent">
-          <div className="max-w-3xl mx-auto relative">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Ask a follow-up question..."
-              className="w-full pl-6 pr-14 py-4 rounded-2xl bg-white/10 border border-white/10 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:bg-white/15 transition-all shadow-lg backdrop-blur-sm"
-              disabled={isLoading}
-            />
-            <button
-              onClick={handleSend}
-              disabled={!input.trim() || isLoading}
-              className="absolute right-2 top-2 p-2 rounded-xl bg-indigo-600 text-white disabled:bg-slate-700 disabled:text-slate-500 hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-500/20"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-              </svg>
-            </button>
+        <div className="pb-6 pt-2">
+          <div className="max-w-3xl mx-auto">
+            <div className="flex items-center gap-3 border border-[#3a3a3a] rounded-2xl px-4 py-3">
+              <textarea
+                ref={textareaRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyPress}
+                placeholder="Ask anything..."
+                className="w-full  text-sm text-white resize-none outline-none placeholder:text-gray-400"
+                disabled={isLoading}
+              />
+
+              {/* Mic Icon */}
+              <button
+                type="button"
+                className="text-gray-400 hover:text-white transition p-1"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-5 h-5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 18.75v1.5m-3.75-1.5h7.5M12 3.75a3 3 0 00-3 3v6a3 3 0 006 0v-6a3 3 0 00-3-3zM5.25 12a6.75 6.75 0 0013.5 0"
+                  />
+                </svg>
+              </button>
+
+              {/* Send Button */}
+              <button
+                onClick={handleSend}
+                disabled={!input.trim() || isLoading}
+                className="text-gray-400 hover:text-white transition p-1 disabled:opacity-40"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="w-5 h-5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M3 12l18-9-6.75 18-2.25-6L3 12z"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
-          <p className="text-center text-xs text-slate-500 mt-3">
-            AI can make mistakes. Consider checking important information.
-          </p>
         </div>
+
       </main>
     </div>
   )
 }
-
