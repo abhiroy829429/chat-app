@@ -1,6 +1,8 @@
-# Diet FAQ Chat Application
+# Smart Diet Insights
 
-A full-stack AI-powered chat application for diet and nutrition FAQs, built with Next.js, MongoDB, and OpenAI.
+A full-stack AI-powered chat application for diet and nutrition FAQs, built with Next.js, MongoDB, and Google Gemini.
+
+![Smart Diet Insights](Images/Dashboard.png.png)
 
 ##  Features
 
