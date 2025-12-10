@@ -2,7 +2,7 @@
 
 A full-stack AI-powered chat application for diet and nutrition FAQs, built with Next.js, MongoDB, and Google Gemini.
 
-![Smart Diet Insights](Images/Dashboard.png.png)
+![Smart Diet Insights](Images/Dashboard.png)
 
 ##  Features
 
@@ -363,5 +363,6 @@ If you want to separate backend:
 - Verify OpenAI API key is valid
 - Check API rate limits
 - Ensure environment variables are set correctly
+
 
 
