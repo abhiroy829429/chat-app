@@ -124,21 +124,24 @@ export default function ChatPage() {
         </div>
 
         <div className="p-6 border-t border-white/10">
-          <div className="flex items-center gap-4 p-4 rounded-2xl bg-gradient-to-r from-white/10 to-white/5 border border-white/10 shadow-lg">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 flex items-center justify-center text-sm font-bold shadow-lg">
-              {session?.user?.name?.charAt(0).toUpperCase() || 'U'}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold truncate text-white">{session?.user?.name || 'User'}</p>
-              <p className="text-xs text-slate-400 truncate">{session?.user?.email || 'user@example.com'}</p>
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-4 p-4 rounded-2xl bg-gradient-to-r from-white/10 to-white/5 border border-white/10 shadow-lg">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 flex items-center justify-center text-sm font-bold shadow-lg">
+                {session?.user?.name?.charAt(0).toUpperCase() || 'U'}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold truncate text-white">{session?.user?.name || 'User'}</p>
+                <p className="text-xs text-slate-400 truncate">{session?.user?.email || 'user@example.com'}</p>
+              </div>
             </div>
             <button
               onClick={() => signOut()}
-              className="p-2 rounded-lg hover:bg-white/10 transition-all"
+              className="w-full px-4 py-3 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-all duration-200 shadow-lg hover:shadow-red-500/25 flex items-center justify-center gap-2"
             >
-              <svg className="w-5 h-5 text-slate-400 hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
+              Sign Out
             </button>
           </div>
         </div>
@@ -156,6 +159,15 @@ export default function ChatPage() {
             </div>
             <span className="font-bold text-lg">DietAI</span>
           </div>
+          <button
+            onClick={() => signOut()}
+            className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-all duration-200 shadow-lg hover:shadow-red-500/25 flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            Sign Out
+          </button>
         </header>
 
         {/* Chat Area */}
